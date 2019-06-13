@@ -11,3 +11,16 @@ Some quick reference for Python Development
 
     run Flask on public IP flask run --host=0.0.0.0
     
+Create virtualenv in python3
+
+    python3 -m venv /path/to/new/virtual/environment
+
+Activate
+
+    source /path/to/new/virtual/environment/bin/activate
+
+Deactivate
+
+    deactivate
+
+
