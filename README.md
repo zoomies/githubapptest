@@ -8,3 +8,6 @@ Some quick reference for Python Development
     pkg-resources==0.0.0
 
     pip install -r requirements.txt
+
+    run Flask on public IP flask run --host=0.0.0.0
+    
