@@ -1,0 +1,7 @@
+Initial Public IP (not sure if this is static or leased) 54.196.74.3
+dynamic dns from noip http://githubapp.ddns.net:5000/
+
+May have to update noip during this testing cycle
+
+Webhook secret uMTnH8TbfTwawUgPdTGw
+
