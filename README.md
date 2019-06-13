@@ -1,5 +1,4 @@
-# githubapptest
-#Github App Test
+# Github App Test
 This is to test permission issues related to permissions on Github Apps.
 
 Some quick reference for Python Development
