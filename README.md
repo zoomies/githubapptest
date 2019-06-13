@@ -14,9 +14,11 @@ Create virtualenv in python3
     python3 -m venv /path/to/new/virtual/environment
 
 Activate
+
     source /path/to/new/virtual/environment/bin/activate
 
 Deactivate
+
     deactivate
 
 
