@@ -9,3 +9,15 @@ FLASK_APP=percheck
 FLASK_ENV=development
 
 flask run --host=0.0.0.0
+
+
+Tests
+
+run tests:
+---------
+pytest
+
+run coverage:
+------------
+coverage run -m pytest  
+coverage reports
