@@ -5,3 +5,7 @@ May have to update noip during this testing cycle
 
 Webhook secret uMTnH8TbfTwawUgPdTGw
 
+FLASK_APP=percheck
+FLASK_ENV=development
+
+flask run --host=0.0.0.0
