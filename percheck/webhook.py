@@ -1,12 +1,17 @@
 from flask import Blueprint, request, abort
+from app_auth import GitApp
+import logging
+
+log = logging.getLogger('percheck.sub')
 
 bp = Blueprint('webhook', __name__)
 
+gitapp = GitApp()
+
 @bp.route('/webhook', methods=['POST'])
 def webhook():
-    print(request.method)
     if request.method == 'POST':
-        print(request.json)
+        gitapp.get_request_payload(request)
         return '', 200
     else:
         abort(400)
