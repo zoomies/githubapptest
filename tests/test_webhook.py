@@ -5,7 +5,8 @@ def test_webhook_post(client):
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype, 
-        'Accept': mimetype
+        'Accept': mimetype,
+        'HTTP_X_HUB_SIGNATURE':'0000000'
     }
     json_string = r'''{
         "action": "revoked",

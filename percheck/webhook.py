@@ -11,7 +11,8 @@ gitapp = GitApp()
 @bp.route('/webhook', methods=['POST'])
 def webhook():
     if request.method == 'POST':
-        gitapp.get_request_payload(request)
+        gitapp.set_request_payload(request)
+        gitapp.verify_webhook_signature(request)
         return '', 200
     else:
         abort(400)
