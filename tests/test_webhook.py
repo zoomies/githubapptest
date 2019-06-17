@@ -1,14 +1,10 @@
 import json
 from percheck import create_app
 
-def test_webhook_post(client):
-    mimetype = 'application/json'
-    headers = {
-        'Content-Type': mimetype, 
-        'Accept': mimetype,
-        'HTTP_X_HUB_SIGNATURE':'0000000'
-    }
-    json_string = r'''{
+mimetype = 'application/json'
+headers = { 'Content-Type': mimetype, 'Accept': mimetype,
+            'HTTP_X_HUB_SIGNATURE':'0000000'}
+json_string = r'''{
         "action": "revoked",
         "sender": {
             "login": "octocat",
@@ -30,7 +26,9 @@ def test_webhook_post(client):
             "type": "User",
             "site_admin": false
         }
-    }'''
+}'''
+
+def test_webhook_post(client):
 
     json_data = json.loads(json_string)
 
@@ -39,6 +37,13 @@ def test_webhook_post(client):
     assert response.content_type == 'text/html; charset=utf-8'
     assert response.content_length == 0
 
+def test_app_auth_sig_noheader(client):
+    json_data = json.loads(json_string)
+
+    response = client.post('/webhook', json=json.dumps(json_data))
+    
+    assert response.content_type == 'text/html; charset=utf-8'
+    assert response.content_length == 0
 
 def test_webhook_get(client):
 
