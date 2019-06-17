@@ -3,7 +3,7 @@ from percheck import create_app
 
 mimetype = 'application/json'
 headers = { 'Content-Type': mimetype, 'Accept': mimetype,
-            'HTTP_X_HUB_SIGNATURE':'0000000'}
+            'HTTP_X_HUB_SIGNATURE':'sha1=50536c72626b413164726935335543457063687a33744d504179673d'}
 json_string = r'''{
         "action": "revoked",
         "sender": {
@@ -34,7 +34,6 @@ def test_webhook_post(client):
 
     response = client.post('/webhook', json=json.dumps(json_data), headers=headers)
     
-    assert response.content_type == 'text/html; charset=utf-8'
     assert response.content_length == 0
 
 def test_app_auth_sig_noheader(client):
@@ -42,8 +41,30 @@ def test_app_auth_sig_noheader(client):
 
     response = client.post('/webhook', json=json.dumps(json_data))
     
-    assert response.content_type == 'text/html; charset=utf-8'
-    assert response.content_length == 0
+    assert response.status == '401 UNAUTHORIZED'
+
+
+def test_app_auth_sig_badsig(client):
+    json_data = json.loads(json_string)
+
+    bad_headers =  { 'Content-Type': mimetype, 'Accept': mimetype,
+            'HTTP_X_HUB_SIGNATURE':'sha1=50536c72626b413164726935335543457063687a33744d50417967'} 
+
+    response = client.post('/webhook', json=json.dumps(json_data), headers=bad_headers)
+    
+    assert response.status == '401 UNAUTHORIZED'
+
+
+def test_app_auth_sig_wrongdigest(client):
+    json_data = json.loads(json_string)
+
+    bad_headers =  { 'Content-Type': mimetype, 'Accept': mimetype,
+            'HTTP_X_HUB_SIGNATURE':'sha256=50536c72626b413164726935335543457063687a33744d504179673d'} 
+
+    response = client.post('/webhook', json=json.dumps(json_data), headers=bad_headers)
+
+    assert response.status == '401 UNAUTHORIZED'
+
 
 def test_webhook_get(client):
 

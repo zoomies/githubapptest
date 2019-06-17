@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 logging.basicConfig(filename='percheck.log', level=logging.INFO, format= '%(asctime)s - %(module)s: %(levelname)s: %(message)s')
 
-
 load_dotenv()
 
 def create_app(test_config=None):
