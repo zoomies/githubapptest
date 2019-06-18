@@ -49,41 +49,26 @@ class GitApp:
                 return is_sig_verified
 
     def get_bearer_token(self):
-        log.info('Generating Bearer Token')
         private_pem = current_app.config['PRIVATE_KEY']
-        private_pem_nl = private_pem.replace('\n',"\n")
-        cert_bytes = private_pem.encode()
-        private_key = default_backend().load_pem_private_key(cert_bytes, None)
-        log.info(private_key)
-
-#        private_key = serialization.load_pem_private_key(
-#            private_pem.encode('utf-8'),
-#            password = None,
-#            backend = default_backend()
-#        )
-
-
-        #Generate JSON Web Token for GitHub Authentication
-        #jwt_payload = {
-        #    # issued at time
-        #    iat: int(time.time()),
-        #    # JWT expiration time (10 minute maximum)
-        #    exp: int(time.time()) + (10 * 60),
-        #    # GitHub App's identifier
-        #    iss: current_app.config['GITHUB_APP_IDENTIFIER']
-        #}
         
-        jwt_dict ={}
-        jwt_dict['iat']=int(time.time())
-        jwt_dict['exp']=int(time.time()) + (10 * 60)
-        jwt_dict['iss']=current_app.config['GITHUB_APP_IDENTIFIER']
+        jwt_payload ={}
+        jwt_payload['iat']=int(time.time())
+        jwt_payload['exp']=int(time.time()) + (10 * 60)
+        jwt_payload['iss']=current_app.config['GITHUB_APP_IDENTIFIER']
 
-        jwt_payload = json.dumps(jwt_dict)
-
-        log.info(str(jwt_payload))
-
-        rtn_token = jwt.encode(jwt_dict, private_pem, "RS256")
-
-        log.info(rtn_token)
+        rtn_token = jwt.encode(jwt_payload, private_pem, "RS256")
 
         return(rtn_token)
+
+    def auth_github_app(self):
+
+        token = self.get_bearer_token()
+
+        auth_headers = {"Authorization": "Bearer {}".format(token.decode()), 
+                        "Accept": "application/vnd.github.machine-man-preview+json"}
+
+        resp = requests.get('https://api.github.com/app', headers=auth_headers)
+
+        log.info('Code: ' + str(resp.status_code))
+        log.info('Content: ' + resp.content.decode())
+

@@ -14,20 +14,7 @@ def webhook():
     if request.method == 'POST':
         gitapp.set_request_payload(request)
         is_valid = gitapp.verify_webhook_signature(request)
-        token = gitapp.get_bearer_token()
-
-        log.info("Webook: " + token.decode())
-
-        auth_headers = {"Authorization": "Bearer {}".format(token.decode()),
-           "Accept": "application/vnd.github.machine-man-preview+json"}
-
-        log.info(auth_headers)
-
-        resp = requests.get('https://api.github.com/app', headers=auth_headers)
-
-        log.info('Code: ' + str(resp.status_code))
-        log.info('Content: ' + resp.content.decode())
-
+        gitapp.auth_github_app()
 
         if is_valid:
             log.info("Return 200")
