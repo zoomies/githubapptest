@@ -1,26 +1,7 @@
 # Github App Test
-This is to test permission issues related to permissions on Github Apps.
 
-Some quick reference for Python Development
+This is a skeleton GitHub  app written on Flask in Python to allow testing the permissions on repos as seens from a GitHub App.
 
-    $ pip freeze > requirements.txt
-    $ cat requirements.txt
-    pkg-resources==0.0.0
+Although there is a pytest structure set up - the tests are 'stale' once the app evolved to authenticating back to GitHub - as testing at that point would require extensive mocking and fixtures - and this is not a production app.
 
-    pip install -r requirements.txt
-
-    run Flask on public IP flask run --host=0.0.0.0
-    
-Create virtualenv in python3
-
-    python3 -m venv /path/to/new/virtual/environment
-
-Activate
-
-    source /path/to/new/virtual/environment/bin/activate
-
-Deactivate
-
-    deactivate
-
-
+The heavy lifting of the authentication is in app_auth.py and the route /webhook is used as the callback from GitHub
