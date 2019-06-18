@@ -21,15 +21,10 @@ class GitApp:
         self.payload=None
 
     def set_request_payload(self, request):
-        #log.info("Loading payload into instance variables")
         self.payload_raw=request.get_data()
-        log.info(self.payload_raw)
         self.payload=request.get_json()
-        log.info(str(self.payload))
-
-    def verify_webhook_signature(self, request):
         
-        log.info(request.headers)
+    def verify_webhook_signature(self, request):
         
         incoming_sig_header = request.headers.get('X-Hub-Signature')
 
@@ -39,7 +34,7 @@ class GitApp:
         else:
             hash_type, incoming_sig = incoming_sig_header.split('=', 1)
             if hash_type != 'sha1':
-                log.info('Unexpected hash type')
+                log.error('Unexpected hash type')
                 return False
             else:
                 # NOTE: The following hard codes the digest type into the call.  Some thought needs to
@@ -53,31 +48,42 @@ class GitApp:
                 log.info("Signature Match: " + str(is_sig_verified))
                 return is_sig_verified
 
-    def authenticate_github_app(self):
-        log.info('Entering Authenticate')
+    def get_bearer_token(self):
+        log.info('Generating Bearer Token')
         private_pem = current_app.config['PRIVATE_KEY']
-        private_key = serialization.load_pem_private_key(
-            private_pem.encode('ascii'),
-            password = None,
-            backend = default_backend()
-        )
+        private_pem_nl = private_pem.replace('\n',"\n")
+        cert_bytes = private_pem.encode()
+        private_key = default_backend().load_pem_private_key(cert_bytes, None)
+        log.info(private_key)
 
-        #Generate JSON Web Token
-        jwt_payload = {
-            # issued at time
-            'iat': int(time.time()),
-            # JWT expiration time (10 minute maximum)
-            'exp': int(time.time()) + (10 * 60),
-            # GitHub App's identifier
-            'iss': current_app.config['GITHUB_APP_IDENTIFIER']
-        }
+#        private_key = serialization.load_pem_private_key(
+#            private_pem.encode('utf-8'),
+#            password = None,
+#            backend = default_backend()
+#        )
 
-        token = jwt.encode(jwt_payload, private_key, "RS256")
 
-        auth_headers = {"Authorization": "Bearer {}".format(token.decode()),
-           "Accept": "application/vnd.github.machine-man-preview+json"}
+        #Generate JSON Web Token for GitHub Authentication
+        #jwt_payload = {
+        #    # issued at time
+        #    iat: int(time.time()),
+        #    # JWT expiration time (10 minute maximum)
+        #    exp: int(time.time()) + (10 * 60),
+        #    # GitHub App's identifier
+        #    iss: current_app.config['GITHUB_APP_IDENTIFIER']
+        #}
+        
+        jwt_dict ={}
+        jwt_dict['iat']=int(time.time())
+        jwt_dict['exp']=int(time.time()) + (10 * 60)
+        jwt_dict['iss']=current_app.config['GITHUB_APP_IDENTIFIER']
 
-        resp = requests.get('https://api.github.com/app', headers=auth_headers)
+        jwt_payload = json.dumps(jwt_dict)
 
-        log.info('Code: ', resp.status_code)
-        log.info('Content: ', resp.content.decode())
+        log.info(str(jwt_payload))
+
+        rtn_token = jwt.encode(jwt_dict, private_pem, "RS256")
+
+        log.info(rtn_token)
+
+        return(rtn_token)

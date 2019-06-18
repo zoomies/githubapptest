@@ -1,6 +1,7 @@
 from flask import Blueprint, request, abort
 from app_auth import GitApp
 import logging
+import requests
 
 log = logging.getLogger('percheck.sub')
 
@@ -13,12 +14,31 @@ def webhook():
     if request.method == 'POST':
         gitapp.set_request_payload(request)
         is_valid = gitapp.verify_webhook_signature(request)
+        token = gitapp.get_bearer_token()
+
+        log.info("Webook: " + token.decode())
+
+        auth_headers = {"Authorization": "Bearer {}".format(token.decode()),
+           "Accept": "application/vnd.github.machine-man-preview+json"}
+
+        log.info(auth_headers)
+
+        resp = requests.get('https://api.github.com/app', headers=auth_headers)
+
+        log.info('Code: ' + str(resp.status_code))
+        log.info('Content: ' + resp.content.decode())
+
+
         if is_valid:
             log.info("Return 200")
             return '', 200
         else:
             log.info("Return 401")
             abort(401)
+
+
+        
+
 #    else:
 #        abort(400)
 #        log.info("Return 400")

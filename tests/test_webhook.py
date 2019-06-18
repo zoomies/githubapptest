@@ -34,16 +34,16 @@ def test_webhook_post(client):
 
     response = client.post('/webhook', json=json.dumps(json_data), headers=headers)
     
-    assert response.content_length == 0
+    assert response.status == '401 UNAUTHORIZED'
 
 def test_app_auth_sig_noheader(client):
     json_data = json.loads(json_string)
 
     response = client.post('/webhook', json=json.dumps(json_data))
     
+    assert response.status == '401 UNAUTHORIZED'
     
-
-
+    
 def test_app_auth_sig_badsig(client):
     json_data = json.loads(json_string)
 
