@@ -60,15 +60,45 @@ class GitApp:
 
         return(rtn_token)
 
-    def auth_github_app(self):
-
+    def auth_headers(self):
         token = self.get_bearer_token()
 
         auth_headers = {"Authorization": "Bearer {}".format(token.decode()), 
                         "Accept": "application/vnd.github.machine-man-preview+json"}
 
-        resp = requests.get('https://api.github.com/app', headers=auth_headers)
+        return(auth_headers)
+
+    def auth_github_app(self):
+        
+        resp = requests.get('https://api.github.com/app', headers=self.auth_headers())
 
         log.info('Code: ' + str(resp.status_code))
         log.info('Content: ' + resp.content.decode())
 
+        return(resp.json())
+
+    def auth_github_installation(self):
+        log.info("Github Installation ID: " + str(self.payload['installation']['id']))
+
+        installation_id = self.payload['installation']['id']
+
+        resp = requests.post('https://api.github.com/installations/{}/access_tokens'.format(installation_id), 
+                             headers=self.auth_headers())
+        
+        resp_json = resp.json()
+
+        log.info('Code: ' + str(resp.status_code))
+        #log.info('Content: ' + resp.content.decode())
+
+
+        install_auth_headers = {"Authorization": "token {}".format(resp_json['token']),
+           "Accept": "application/vnd.github.machine-man-preview+json"}
+
+        resp = requests.get('https://api.github.com/installation/repositories', headers=install_auth_headers)
+        
+        json_string = json.dumps(resp.json(), indent=4, sort_keys=True)
+
+        log.info('Installation token: ' + resp_json['token'])
+        log.info('Code: ' + str(resp.status_code))
+        #log.info('Content: ' + resp.content.decode())
+        #log.info('Pretty: ' + json_string)

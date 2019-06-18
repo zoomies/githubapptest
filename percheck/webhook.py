@@ -15,6 +15,7 @@ def webhook():
         gitapp.set_request_payload(request)
         is_valid = gitapp.verify_webhook_signature(request)
         gitapp.auth_github_app()
+        gitapp.auth_github_installation()
 
         if is_valid:
             log.info("Return 200")
