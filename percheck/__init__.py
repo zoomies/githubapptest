@@ -40,8 +40,9 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from percheck import (hello, webhook)
+    from percheck import (webhook, hello, install)
     app.register_blueprint(hello.bp)
     app.register_blueprint(webhook.bp)
+    app.register_blueprint(install.bp)
     return app
     
