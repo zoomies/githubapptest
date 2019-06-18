@@ -1,7 +1,13 @@
 import hmac, hashlib, base64
 import logging
 import json
+import time
+import requests
 from flask import current_app
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+import jwt
+
 
 log = logging.getLogger('percheck.sub')
 
@@ -17,11 +23,15 @@ class GitApp:
     def set_request_payload(self, request):
         #log.info("Loading payload into instance variables")
         self.payload_raw=request.get_data()
+        log.info(self.payload_raw)
         self.payload=request.get_json()
-        #log.info(str(self.payload))
+        log.info(str(self.payload))
 
     def verify_webhook_signature(self, request):
-        incoming_sig_header = request.headers.get('HTTP_X_HUB_SIGNATURE')
+        
+        log.info(request.headers)
+        
+        incoming_sig_header = request.headers.get('X-Hub-Signature')
 
         if incoming_sig_header == None:
             log.error('No Github Webhook Signature')
@@ -36,12 +46,38 @@ class GitApp:
                 # be put into whether this should allow any digest referenced by the header.  The
                 # docs for Github specifically said SHA1 - so my thought is that any other should
                 # not be allowed - at least for this test app.
-                calculated_hmac = hmac.new(current_app.config['GITHUB_WEBHOOK_SECRET'].encode('ascii'), self.payload_raw, hashlib.sha1).digest()
-                hex_digest = base64.encodebytes(calculated_hmac).strip()
-                log.info("Calculated HMAC: " + hex_digest.hex())
+                calculated_hmac = hmac.new(current_app.config['GITHUB_WEBHOOK_SECRET'].encode(), self.payload_raw, hashlib.sha1).hexdigest()
+                log.info("Calculated HMAC: " + str(calculated_hmac))
                 log.info("  Expected HMAC: " + incoming_sig)
-                is_sig_verified = hmac.compare_digest(hex_digest.hex(), incoming_sig)
+                is_sig_verified = hmac.compare_digest(calculated_hmac, incoming_sig)
                 log.info("Signature Match: " + str(is_sig_verified))
                 return is_sig_verified
 
+    def authenticate_github_app(self):
+        log.info('Entering Authenticate')
+        private_pem = current_app.config['PRIVATE_KEY']
+        private_key = serialization.load_pem_private_key(
+            private_pem.encode('ascii'),
+            password = None,
+            backend = default_backend()
+        )
 
+        #Generate JSON Web Token
+        jwt_payload = {
+            # issued at time
+            'iat': int(time.time()),
+            # JWT expiration time (10 minute maximum)
+            'exp': int(time.time()) + (10 * 60),
+            # GitHub App's identifier
+            'iss': current_app.config['GITHUB_APP_IDENTIFIER']
+        }
+
+        token = jwt.encode(jwt_payload, private_key, "RS256")
+
+        auth_headers = {"Authorization": "Bearer {}".format(token.decode()),
+           "Accept": "application/vnd.github.machine-man-preview+json"}
+
+        resp = requests.get('https://api.github.com/app', headers=auth_headers)
+
+        log.info('Code: ', resp.status_code)
+        log.info('Content: ', resp.content.decode())
