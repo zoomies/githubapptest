@@ -46,3 +46,4 @@ Deactivate
 
     deactivate
 
+Just some text to test commit notifications
